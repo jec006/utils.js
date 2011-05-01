@@ -8,13 +8,13 @@
  var Utils = {
   //add a class to an element
   addClass : function(e, c){
-    if(!e.className.match(new RegExp("\b"+c+"\b"))){
+    if(!e.className.match(new RegExp("(\s*|^)"+c+"(\s*|$)"))){
       e.className += e.className == '' ? c : ' '+c;
     }
   },
   //remove a class from an element
   rmClass : function(e, c){
-    e.className = e.className.replace(new RegExp("\b"+c+"\b", 'g'), '');
+    e.className = e.className.replace(new RegExp("(\s*|^)"+c+"(\s*|$)", 'g'), '');
   },
  	//A function for creating a DOM element and assigning attributes and content
   createElement : function(tagName, content, attr){
@@ -37,6 +37,9 @@
             } 
           }
           break;
+        case 'undefined':
+          //do nothing
+          break
         default :
           //We aren't sure what this is but we'll just set the innerHTML element and call it a day
           typeof(el.innerHTML) != 'undefined' ? el.innerHTML = content : content;
@@ -48,6 +51,35 @@
     }      
     return el;
       
+  },
+  //convience function for appending and storing
+  appendChild : function(parent, el){
+    parent.appendChild(el);
+    return el;
+  },
+  createTable : function(data, headers){
+    var table = u.createElement('table');
+    var rowWidth = 2;
+    if(typeof(headers) != 'object'){
+      //assume its just a number of cells per row
+      var temp = parseInt(headers);
+      rowWidth = isNaN(temp) ? rowWidth : temp;
+    } else {
+      //create the headers
+      rowWidth = headers.length
+      var thead = u.appendChild(table, u.createElement('thead'));
+      for(var i=0; i<rowWidth; i++){
+        thead.appendChild(u.createElement('th', headers[i], {className: 'table-header col-'+(i%2?'odd':'even')}));
+      }
+    }
+    var tbody = u.appendChild(table, u.createElement('tbody'));
+    for(var i=0; i<data.length; i+=rowWidth){
+      var tr = u.appendChild(tbody, u.createElement('tr', '', {className: 'table-row row-'+(i%(2*rowWidth)?'odd':'even')}));
+      for(var c=0; c<rowWidth && i+c < data.length; c++){
+        tr.appendChild(u.createElement('td', data[i+c], {className: 'table-cell cell-'+(c%2?'odd':'even')}));
+      }
+    }
+    return table;
   },
   //returns the 'real type' of an object instead of just 'Object'
   realType : function(obj){
@@ -127,6 +159,9 @@
  
       return el;
     }
+  },
+  bind : function(obj, func){
+  	return function() { return func.apply(obj, arguments); };
   }
 };
  //alias window.u and Utils for shortness
